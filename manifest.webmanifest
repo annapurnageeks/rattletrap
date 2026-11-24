@@ -1,0 +1,18 @@
+{
+  "name": "Rattletrap",
+  "short_name": "Rattletrap",
+  "description": "Climb endless hills in a rickety little truck. Grab coins and fuel, flip for bonuses, upgrade your ride.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#6ec3f4",
+  "theme_color": "#6ec3f4",
+  "categories": ["games"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

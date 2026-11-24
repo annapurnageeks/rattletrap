@@ -1,0 +1,7 @@
+{
+  "name": "rattletrap-tools",
+  "private": true,
+  "description": "Test drives Rattletrap in headless Chrome",
+  "scripts": { "test": "node check.js" },
+  "devDependencies": { "planck": "1.4.2", "puppeteer-core": "23.11.1" }
+}

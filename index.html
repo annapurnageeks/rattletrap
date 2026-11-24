@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Rattletrap · drive as far as the hills let you</title>
+  <meta name="description" content="A physics driving game. Climb endless hills in a rickety little truck, grab coins and fuel, flip for bonuses and upgrade your ride in the garage.">
+  <meta name="theme-color" content="#6ec3f4">
+  <meta property="og:title" content="Rattletrap">
+  <meta property="og:description" content="Climb the hills, don't land on your head. How far can you get?">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://annapurnageeks.github.io/rattletrap/social.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- web-only: installable like an app. Portal builds leave this block out. -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Rattletrap">
+  <!-- /web-only -->
+
+  <link rel="preload" href="fonts/nunito.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-screen="menu">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="#ffc83d" stroke="#d08a00" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#d08a00" stroke-width="1.6"/></symbol>
+    <symbol id="i-fuel" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M5 5.5A2.5 2.5 0 0 1 7.5 3h6A2.5 2.5 0 0 1 16 5.5V21H5zM7.5 6v4h6V6z"/><path d="M16 9.5h1.5a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 0 3 0V8l-3-3"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.5 21V3.5"/><path fill="currentColor" d="M5.5 4h12l-2.5 4.25L17.5 12.5h-12z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path stroke-width="3.2" d="M8.5 5.5v13M15.5 5.5v13"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13l10.5-6.5z"/></symbol>
+    <symbol id="i-wrench" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M20.6 6.3 17.4 9.5l-2.9-.6-.6-2.9 3.2-3.2a5.5 5.5 0 0 0-7 6.9l-7 7a2.1 2.1 0 0 0 3 3l7-7a5.5 5.5 0 0 0 6.9-7z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path stroke-width="2.4" d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-retry" viewBox="0 0 24 24"><path stroke-width="2.4" d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path stroke-width="2.4" d="M19.5 4v4.5H15"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path fill="currentColor" d="M3.5 9.5h3.5L12 5.5v13l-5-4H3.5z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v8.5a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-engine" viewBox="0 0 24 24"><path d="M4 9.5h3l1.5-2h6l1.5 2H19v3h2v-2M19 12.5v3h-3l-1.5 2h-6L7 15.5H4zM4 11v3M2 12.5h2M10 7.5V5h4v2.5"/></symbol>
+    <symbol id="i-spring" viewBox="0 0 24 24"><path d="M6 3.5h12M6 20.5h12M8 6.5l8 2-8 2 8 2-8 2 8 2"/></symbol>
+    <symbol id="i-tire" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></symbol>
+  </svg>
+
+  <canvas id="stage" aria-label="Rattletrap: a little truck on a hilly road"></canvas>
+
+  <!-- while driving -->
+  <header id="hud" class="hud">
+    <div class="fuel" aria-label="Fuel">
+      <svg class="icon"><use href="#i-fuel"/></svg>
+      <div class="gauge"><i id="fuel-bar"></i></div>
+    </div>
+    <div class="distance">
+      <strong id="distance">0 m</strong>
+      <span id="best-line"></span>
+    </div>
+    <div class="coins"><svg class="icon"><use href="#i-coin"/></svg> <span id="run-coins">0</span></div>
+    <button id="pause" class="button round" aria-label="Pause"><svg class="icon"><use href="#i-pause"/></svg></button>
+  </header>
+
+  <div id="pedals" class="pedals">
+    <button id="brake" class="pedal brake" aria-label="Brake and reverse (Left arrow)">
+      <span class="pedal-face"></span><b>BRAKE</b>
+    </button>
+    <button id="gas" class="pedal gas" aria-label="Gas (Right arrow)">
+      <span class="pedal-face"></span><b>GAS</b>
+    </button>
+  </div>
+
+  <!-- menu -->
+  <section id="menu" class="panel">
+    <h1 class="logo">Rattle<span>trap</span></h1>
+    <p class="tagline">Climb the hills. Don't land on your head.</p>
+    <div class="wallet">
+      <span><svg class="icon"><use href="#i-coin"/></svg> <b id="menu-coins">0</b></span>
+      <span><svg class="icon"><use href="#i-flag"/></svg> best <b id="menu-best">0 m</b></span>
+    </div>
+    <button id="drive" class="button primary big"><svg class="icon"><use href="#i-play"/></svg> Drive</button>
+    <button id="open-garage" class="button big"><svg class="icon"><use href="#i-wrench"/></svg> Garage <span id="garage-dot" class="dot" hidden></span></button>
+    <div class="menu-foot">
+      <label class="toggle"><input type="checkbox" id="toggle-sound"><svg class="icon"><use href="#i-sound"/></svg> Sound</label>
+      <p class="keys">Keys: <kbd>→</kbd> gas, <kbd>←</kbd> brake, <kbd>P</kbd> pause</p>
+    </div>
+  </section>
+
+  <!-- garage -->
+  <section id="garage" class="panel wide">
+    <div class="panel-head">
+      <h2>Garage</h2>
+      <span class="wallet-chip"><svg class="icon"><use href="#i-coin"/></svg> <b id="garage-coins">0</b></span>
+      <button id="close-garage" class="button round ghost" aria-label="Close the garage"><svg class="icon"><use href="#i-close"/></svg></button>
+    </div>
+    <div id="upgrades" class="upgrades"></div>
+    <button id="garage-drive" class="button primary big"><svg class="icon"><use href="#i-play"/></svg> Drive</button>
+  </section>
+
+  <!-- paused -->
+  <section id="paused" class="panel">
+    <h2>Paused</h2>
+    <button id="resume" class="button primary big"><svg class="icon"><use href="#i-play"/></svg> Keep driving</button>
+    <button id="restart" class="button big"><svg class="icon"><use href="#i-retry"/></svg> Start over</button>
+    <button id="quit" class="button ghost"><svg class="icon"><use href="#i-home"/></svg> Menu</button>
+  </section>
+
+  <!-- the end of a run -->
+  <section id="result" class="panel">
+    <p id="result-reason" class="reason"></p>
+    <div class="result-distance"><strong id="result-distance">0 m</strong><span id="result-best"></span></div>
+    <div id="result-lines" class="lines"></div>
+    <div class="result-total"><span>Coins earned</span><b><svg class="icon"><use href="#i-coin"/></svg> <span id="result-coins">0</span></b></div>
+    <p id="result-tip" class="tip"></p>
+    <div class="row">
+      <button id="again" class="button primary big"><svg class="icon"><use href="#i-retry"/></svg> Drive again</button>
+      <button id="result-garage" class="button big"><svg class="icon"><use href="#i-wrench"/></svg> Garage</button>
+    </div>
+    <button id="result-menu" class="button ghost"><svg class="icon"><use href="#i-home"/></svg> Menu</button>
+  </section>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="vendor/planck.min.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
