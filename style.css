@@ -112,7 +112,9 @@ h1, h2, p { margin: 0; }
   z-index: 10;
 }
 .panel.wide { width: min(560px, calc(100vw - 24px)); }
+.panel > *, #vehicle-detail > * { flex-shrink: 0; }
 body[data-screen="menu"] #menu,
+body[data-screen="stages"] #stages,
 body[data-screen="garage"] #garage,
 body[data-screen="paused"] #paused,
 body[data-screen="result"] #result {
@@ -155,7 +157,14 @@ kbd { font: inherit; background: rgba(0, 0, 0, 0.07); border-radius: 6px; paddin
 .wallet-chip { display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(255, 200, 61, 0.22); border-radius: 99px; padding: 0.3rem 0.8rem; font-size: 1.05rem; }
 
 .upgrades { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-@media (max-width: 420px) { .upgrades { grid-template-columns: 1fr; } }
+@media (max-width: 420px) {
+  .upgrades { grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+  .upgrade { padding: 0.6rem; }
+  .upgrade .about { display: none; }
+  .upgrade .button { font-size: 0.82rem; padding: 0.5rem 0.3rem; gap: 0.25rem; }
+  .vehicle-hero { grid-template-columns: 1fr; }
+  .vehicle-hero canvas { width: 100%; height: 110px; }
+}
 .upgrade {
   background: #fff;
   border-radius: 20px;
@@ -298,6 +307,173 @@ body:not([data-screen="drive"]) .pedals .pedal { pointer-events: none; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
+/* ---------- menu extras ---------- */
+
+.wallet { font-size: 1.25rem; align-items: center; gap: 0.35rem; }
+.picks { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.pick {
+  font: inherit;
+  border: none;
+  cursor: pointer;
+  border-radius: 18px;
+  padding: 0.6rem 0.7rem;
+  background: #fff;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 0.05rem;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.08);
+  background-image: var(--art, none);
+  background-size: cover;
+  transition: transform 0.15s var(--spring);
+}
+.pick:hover { transform: translateY(-2px); }
+.pick:active { transform: scale(0.97); }
+.pick:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.pick-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; }
+.pick b { font-size: 1.05rem; font-weight: 900; }
+.pick-note { font-size: 0.75rem; opacity: 0.75; }
+.pick.light { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35); }
+
+.missions { background: rgba(0, 0, 0, 0.04); border-radius: 18px; padding: 0.6rem 0.75rem; text-align: left; }
+.missions h3 { margin: 0 0 0.35rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
+.mission { display: grid; grid-template-columns: 1fr auto; gap: 0.1rem 0.5rem; align-items: center; padding: 0.3rem 0; font-size: 0.88rem; }
+.mission + .mission { border-top: 1px solid var(--line); }
+.mission .reward { font-size: 0.8rem; color: var(--muted); display: inline-flex; align-items: center; gap: 0.2rem; }
+.mission .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: rgba(0, 0, 0, 0.08); overflow: hidden; }
+.mission .bar i { display: block; height: 100%; background: var(--good); border-radius: 3px; }
+
+.menu-foot { flex-direction: row; justify-content: center; flex-wrap: wrap; gap: 0.2rem; }
+.button.small { padding: 0.5rem 0.75rem; font-size: 0.9rem; border-radius: 12px; }
+.button.gift { background: var(--gold); color: var(--ink); box-shadow: inset 0 -3px 0 #d08a00; animation: wiggle 2.4s ease-in-out infinite; }
+.button.gift[hidden] { display: none; }
+@keyframes wiggle { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-6deg); } 90% { transform: rotate(6deg); } 95% { transform: rotate(-3deg); } }
+
+/* ---------- adventures and garage ---------- */
+
+.panel-head .button.round { flex: none; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 0.6rem; }
+.card {
+  font: inherit;
+  border: 3px solid transparent;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s var(--spring);
+}
+.card:hover { transform: translateY(-2px); }
+.card.chosen { border-color: var(--primary); }
+.card .art { height: 70px; position: relative; }
+.card .art span { position: absolute; left: 8px; top: 6px; font-size: 0.68rem; padding: 0.1rem 0.45rem; border-radius: 99px; background: rgba(255, 255, 255, 0.85); }
+.card .body { padding: 0.55rem 0.7rem 0.7rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.card h3 { margin: 0; font-size: 1rem; font-weight: 900; }
+.card p { margin: 0; font-size: 0.76rem; color: var(--muted); line-height: 1.25; }
+.card .state { font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem; margin-top: 0.15rem; }
+.card.locked .art { filter: grayscale(0.7) brightness(0.85); }
+.card .buy { color: var(--primary-dark); }
+.card .buy.poor { color: var(--muted); }
+.medals { display: flex; gap: 0.15rem; }
+.medals .icon { width: 1em; height: 1em; color: rgba(0, 0, 0, 0.12); }
+.medals .bronze { color: #cd7f32; }
+.medals .silver { color: #a8b2bd; }
+.medals .gold { color: #f2b70f; }
+
+.tabs { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.2rem; scrollbar-width: none; }
+.tab {
+  font: inherit;
+  font-weight: 900;
+  border: none;
+  border-radius: 14px;
+  padding: 0.5rem 0.8rem;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.tab[aria-selected="true"] { background: var(--ink); color: #fff; }
+.tab .icon { width: 0.9em; height: 0.9em; }
+
+.vehicle-hero { display: grid; grid-template-columns: 170px 1fr; gap: 0.8rem; align-items: center; text-align: left; background: #fff; border-radius: 20px; padding: 0.7rem; }
+.vehicle-hero canvas { position: static; width: 170px; height: 100px; border-radius: 14px; background: linear-gradient(#bfe6ff, #eaf7ff); }
+.vehicle-hero h3 { margin: 0; font-size: 1.2rem; font-weight: 900; }
+.vehicle-hero p { margin: 0.1rem 0 0.4rem; font-size: 0.82rem; color: var(--muted); }
+.traits { display: grid; grid-template-columns: auto 1fr; gap: 0.15rem 0.5rem; font-size: 0.74rem; color: var(--muted); align-items: center; }
+.traits i { height: 6px; border-radius: 3px; background: rgba(0, 0, 0, 0.08); position: relative; overflow: hidden; }
+.traits i::after { content: ""; position: absolute; inset: 0; width: var(--v); background: var(--primary); border-radius: 3px; }
+.paints { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--muted); }
+.paint { width: 30px; height: 30px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px var(--line); cursor: pointer; padding: 0; position: relative; }
+.paint.on { box-shadow: 0 0 0 3px var(--ink); }
+.paint.locked::after { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.55); }
+#vehicle-detail { display: flex; flex-direction: column; gap: 0.6rem; }
+.buy-vehicle { width: 100%; }
+
+/* ---------- driving extras ---------- */
+
+.fuel-box { display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; }
+.next-fuel { font-size: 0.75rem; background: rgba(255, 255, 255, 0.75); border-radius: 10px; padding: 0.1rem 0.5rem; color: var(--ink); }
+.next-fuel:empty { display: none; }
+.stuck { position: fixed; left: 50%; top: 84px; transform: translateX(-50%); z-index: 6; font-size: 0.9rem; padding: 0.55rem 0.9rem; }
+.stuck[hidden] { display: none; }
+body:not([data-screen="drive"]) .stuck { display: none; }
+body.swap .pedals { flex-direction: row-reverse; }
+
+/* ---------- sheets ---------- */
+
+.sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  width: min(480px, 100%);
+  max-height: 88dvh;
+  overflow-y: auto;
+  transform: translate(-50%, 105%);
+  background: #fffbf4;
+  border-radius: 28px 28px 0 0;
+  box-shadow: var(--shadow);
+  padding: 1.2rem 1.3rem max(1.4rem, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  z-index: 20;
+  transition: transform 0.4s var(--spring);
+}
+.sheet.open { transform: translate(-50%, 0); }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; }
+.sheet h2 { font-size: 1.5rem; font-weight: 900; }
+.sheet h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 0.4rem 0 0; }
+.scrim { position: fixed; inset: 0; background: rgba(10, 15, 40, 0.35); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 19; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 1rem; cursor: pointer; padding: 0.25rem 0; font-size: 0.95rem; }
+.switch small { color: var(--muted); font-weight: 700; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch i { flex: none; width: 48px; height: 28px; border-radius: 99px; background: rgba(0, 0, 0, 0.18); position: relative; transition: background 0.2s; }
+.switch i::after { content: ""; position: absolute; left: 3px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform 0.25s var(--spring); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+.switch input:checked + i { background: var(--good); }
+.switch input:checked + i::after { transform: translateX(20px); }
+.switch input:focus-visible + i { outline: 3px solid var(--ink); outline-offset: 2px; }
+.rules { margin: 0; padding-left: 1.2rem; color: var(--muted); font-size: 0.88rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.rules b { color: var(--ink); }
+.credits { font-size: 0.75rem; color: var(--muted); }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; }
+.tiles div { background: rgba(0, 0, 0, 0.04); border-radius: 14px; padding: 0.6rem 0.3rem; text-align: center; }
+.tiles b { display: block; font-size: 1.3rem; font-weight: 900; }
+.tiles span { font-size: 0.72rem; color: var(--muted); }
+.bests { display: flex; flex-direction: column; gap: 0.3rem; }
+.bests div { display: flex; justify-content: space-between; font-size: 0.92rem; padding: 0.3rem 0; border-bottom: 1px solid var(--line); }
+.bests span { color: var(--muted); }
+
 /* ---------- small screens ---------- */
 
 /* Phones held sideways: everything a bit tighter, and the garage in one row of four. */
@@ -317,6 +493,13 @@ body:not([data-screen="drive"]) .pedals .pedal { pointer-events: none; }
   .result-distance strong { font-size: 2.2rem; }
   .lines { padding: 0.4rem 0.8rem; }
   .tip { font-size: 0.78rem; }
+  .missions { display: none; }
+  .vehicle-hero { grid-template-columns: 130px 1fr; padding: 0.5rem; }
+  .vehicle-hero canvas { width: 130px; height: 76px; }
+  .vehicle-hero p, .traits { display: none; }
+  .card .art { height: 46px; }
+  .card p { display: none; }
+  .cards { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-height: 520px) and (max-width: 560px) {
   .upgrades { grid-template-columns: 1fr 1fr; }
@@ -324,5 +507,5 @@ body:not([data-screen="drive"]) .pedals .pedal { pointer-events: none; }
 
 /* Phones held upright: the menu sits lower, so you can see the truck above it. */
 @media (orientation: portrait) and (min-height: 600px) {
-  #menu { top: 64%; }
+  #menu { top: 61%; max-height: 76dvh; }
 }

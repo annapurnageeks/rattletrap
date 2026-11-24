@@ -6,7 +6,7 @@ const CACHE = "rattletrap";
 const FILES = [
   "./", "index.html", "style.css", "game.js", "vendor/planck.min.js", "manifest.webmanifest",
   "fonts/nunito.woff2", "icons/icon.svg", "icons/icon-192.png",
-  ...["star", "crash", "mission", "best", "fanfare", "tick"].map((name) => `sounds/${name}.mp3`),
+  ...["star", "crash", "mission", "best", "fanfare", "tick", "music"].map((name) => `sounds/${name}.mp3`),
 ];
 
 self.addEventListener("install", (event) => {
