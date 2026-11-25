@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Rattletrap</string>
+    <string name="title_activity_main">Rattletrap</string>
+    <string name="package_name">com.annapurnageeks.rattletrap</string>
+    <string name="custom_url_scheme">com.annapurnageeks.rattletrap</string>
+</resources>

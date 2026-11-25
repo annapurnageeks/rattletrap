@@ -1,0 +1,8 @@
+{
+  "appId": "com.annapurnageeks.rattletrap",
+  "appName": "Rattletrap",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#6ec3f4"
+  }
+}

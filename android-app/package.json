@@ -1,0 +1,21 @@
+{
+  "name": "rattletrap-android",
+  "private": true,
+  "description": "Rattletrap as an Android app (Capacitor), with AdMob ads",
+  "scripts": {
+    "web": "node ../tools/build.js android && rm -rf www && cp -R ../dist/android www",
+    "sync": "npm run web && npx cap sync android",
+    "debug": "npm run sync && cd android && ./gradlew assembleDebug",
+    "release": "npm run sync && cd android && ./gradlew bundleRelease"
+  },
+  "dependencies": {
+    "@capacitor-community/admob": "8.3.0",
+    "@capacitor/android": "8.6.0",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "4.0.0",
+    "@capacitor/cli": "8.6.0"
+  }
+}

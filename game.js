@@ -32,7 +32,7 @@ const CHUNK = 40;               // the ground is built in 40-metre pieces, just 
 const SAVE_KEY = "rattletrap.v1";
 
 // A game portal can replace these by setting window.GAME_PLATFORM before this file loads.
-const platform = Object.assign({
+const platform = Object.defineProperties({
   name: "web",
   storage: () => window.localStorage,
   gameplayStart() {},             // a run starts (or resumes)
@@ -44,7 +44,9 @@ const platform = Object.assign({
   onPause(pause) {},              // hands over "pause the run", for when the portal needs it
   synthSound: true,               // the engine sound is made in code (some portals only allow recordings)
   escapePauses: true,             // Esc pauses (some portals keep Esc for themselves)
-}, window.GAME_PLATFORM || {});
+  rewardedAd: null,               // (onReward, pauseAudio) => shows an ad the player chose to watch
+  onBack(handler) {},             // hands over the phone's Back button handler (the Android app)
+}, Object.getOwnPropertyDescriptors(window.GAME_PLATFORM || {})); // (keeps "live" values like rewardedAd live)
 
 const $ = (id) => document.getElementById(id);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -2038,6 +2040,21 @@ function showResult(earned, metres, newBest, oldBest) {
   for (const r of run.rewards) lines.push([r.medal !== undefined ? r.text : `Mission: ${r.text}`, r.coins]);
   $("result-lines").innerHTML = lines.map(([label, value]) => `<div><span>${label}</span><b>+${fmt(value)}</b></div>`).join("");
   $("result-coins").textContent = fmt(earned);
+  // An optional ad that doubles this run's coins (only where the platform offers one).
+  const double = $("double");
+  double.hidden = !platform.rewardedAd || earned <= 0;
+  double.disabled = false;
+  double.onclick = () => {
+    double.disabled = true;
+    platform.rewardedAd(() => {
+      save.coins += earned;
+      persist();
+      $("result-coins").textContent = fmt(earned * 2);
+      double.hidden = true;
+      play("fanfare", { volume: 0.5 });
+      toast(`Doubled! +${fmt(earned)} coins`);
+    }, pauseAudio, () => { double.disabled = false; });
+  };
   const canUpgrade = UPGRADES.filter((u) => save.vehicles[save.vehicle].levels[u.id] < MAX_LEVEL && save.coins >= upgradeCost(u, save.vehicles[save.vehicle].levels[u.id], vehicleNow()));
   const nextStage = STAGES.find((s) => !save.stages[s.id].owned);
   const tips = {
@@ -2067,6 +2084,17 @@ function resumeGame() {
 }
 
 platform.onPause(pauseGame);
+
+// The phone's Back button: close what's open, or step back a screen. Returns false on the
+// main menu, so the app can close.
+platform.onBack(() => {
+  if (document.querySelector(".sheet.open")) { closeSheets(); return true; }
+  if (screen === "drive") { pauseGame(); return true; }
+  if (screen === "paused") { resumeGame(); return true; }
+  if (screen === "menu") return false;
+  toMenu();
+  return true;
+});
 
 // The Drive buttons. Portals that ask for it get an ad before the first drive of a visit.
 let firstDrive = true;

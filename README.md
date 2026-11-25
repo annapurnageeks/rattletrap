@@ -69,6 +69,13 @@ node tools/build.js playgama
 Each portal gives you its IDs once you add the game in its developer dashboard. The Playgama build
 saves through Playgama Bridge and turns off the engine sound (Playgama only allows recorded sounds).
 
+## Android app
+
+`android-app/` packs the game as an Android app with Capacitor, with fair AdMob ads (an optional
+"double your coins" ad, and a short ad at most every few runs, never while driving). See
+[android-app/README.md](android-app/README.md) for building it, AdMob, signing and Google Play.
+Privacy policy: [privacy.html](https://annapurnageeks.github.io/rattletrap/privacy.html).
+
 ## Credits
 
 Physics: planck.js (MIT, `vendor/planck-LICENSE.txt`).
