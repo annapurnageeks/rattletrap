@@ -40,6 +40,10 @@ const platform = Object.assign({
   happytime() {},                 // something great just happened
   breakAd(done, pauseAudio) { done(); }, // between runs; call done() when it's over
   muted: () => false,
+  adBeforeFirstRun: false,        // some portals want an ad when Drive is first pressed
+  onPause(pause) {},              // hands over "pause the run", for when the portal needs it
+  synthSound: true,               // the engine sound is made in code (some portals only allow recordings)
+  escapePauses: true,             // Esc pauses (some portals keep Esc for themselves)
 }, window.GAME_PLATFORM || {});
 
 const $ = (id) => document.getElementById(id);
@@ -2062,8 +2066,21 @@ function resumeGame() {
   platform.gameplayStart();
 }
 
-$("drive").addEventListener("click", startDriving);
-$("garage-drive").addEventListener("click", startDriving);
+platform.onPause(pauseGame);
+
+// The Drive buttons. Portals that ask for it get an ad before the first drive of a visit.
+let firstDrive = true;
+function drivePressed() {
+  wakeAudio();
+  if (firstDrive && platform.adBeforeFirstRun) {
+    firstDrive = false;
+    return platform.breakAd(startDriving, pauseAudio);
+  }
+  firstDrive = false;
+  startDriving();
+}
+$("drive").addEventListener("click", drivePressed);
+$("garage-drive").addEventListener("click", drivePressed);
 $("open-garage").addEventListener("click", openGarage);
 $("pick-vehicle").addEventListener("click", openGarage);
 $("open-stages").addEventListener("click", openStages);
@@ -2169,7 +2186,7 @@ addEventListener("keydown", (event) => {
     wakeAudio();
     input[KEYS[event.code]] = true;
     $(KEYS[event.code]).classList.add("down");
-  } else if (event.code === "KeyP" || event.code === "Escape") {
+  } else if (event.code === "KeyP" || (event.code === "Escape" && platform.escapePauses)) {
     if (document.querySelector(".sheet.open")) closeSheets();
     else if (screen === "drive") pauseGame();
     else if (screen === "paused") resumeGame();
@@ -2285,7 +2302,7 @@ function updateMusic() {
 
 function updateEngineSound() {
   if (!audio.engine) return;
-  const on = save.settings.engine && !platform.muted() && screen === "drive" && run && !run.reason && run.fuel > 0 && !audio.held;
+  const on = platform.synthSound && save.settings.engine && !platform.muted() && screen === "drive" && run && !run.reason && run.fuel > 0 && !audio.held;
   const spin = car ? Math.abs(car.wheels[0].getAngularVelocity()) * car.spec.wheels[0].r / 0.43 : 0;
   const rev = clamp(spin / 40, 0, 1);
   const note = car ? car.spec.engineNote : 1;

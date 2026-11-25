@@ -53,7 +53,21 @@ fuel and prices stay balanced:
 cd tools && npm install && node check.js
 ```
 
-`node tools/build.js itch` makes the zip for itch.io.
+## Game portals
+
+`node tools/build.js <portal>` packs the game for a game site, with its SDK and an adapter from
+`portal/` (ads only between runs, never while driving; with an ad blocker the game just carries on):
+
+```
+node tools/build.js itch
+node tools/build.js gamedistribution GAME_ID=...
+node tools/build.js gamemonetize GAME_ID=...
+node tools/build.js y8 APP_ID=... GAME_ID=...
+node tools/build.js playgama
+```
+
+Each portal gives you its IDs once you add the game in its developer dashboard. The Playgama build
+saves through Playgama Bridge and turns off the engine sound (Playgama only allows recorded sounds).
 
 ## Credits
 
