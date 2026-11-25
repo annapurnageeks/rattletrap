@@ -6,6 +6,7 @@
 //   node tools/build.js y8 APP_ID=... GAME_ID=...       ->  dist/rattletrap-y8.zip
 //   node tools/build.js playgama                        ->  dist/rattletrap-playgama.zip
 //   node tools/build.js android [INTERSTITIAL_ID=... REWARDED_ID=...]  (used by android-app/)
+//   node tools/build.js android-native                  (for a plain Android Studio WebView app)
 //
 // Compared with the web version, a portal build:
 //   - leaves out the "web-only" block in index.html (app manifest and icons) and the service worker
@@ -28,6 +29,7 @@ const PORTALS = {
     ids: ["APP_ID", "GAME_ID"],
   },
   android: { body: ['<script src="android.js"></script>', '<script src="game.js"></script>'], ids: ["INTERSTITIAL_ID", "REWARDED_ID"] },
+  "android-native": { body: ['<script src="android-native.js"></script>', '<script src="game.js"></script>'] },
   playgama: {
     head: ['<script src="https://bridge.playgama.com/v2/stable/playgama-bridge.js"></script>'], // must come first
     body: ['<script src="playgama.js"></script>'], // playgama.js loads game.js once Bridge is ready
