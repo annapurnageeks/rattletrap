@@ -10,7 +10,7 @@
 
 :root {
   --ink: #23263a;
-  --muted: rgba(35, 38, 58, 0.62);
+  --muted: rgba(35, 38, 58, 0.74); /* 5.4:1 on white, readable on small text */
   --card: rgba(255, 251, 244, 0.94);
   --line: rgba(35, 38, 58, 0.12);
   --button: #ffffff;
@@ -206,11 +206,13 @@ kbd { font: inherit; background: rgba(0, 0, 0, 0.07); border-radius: 6px; paddin
 body:not([data-screen="drive"]):not([data-screen="paused"]) .hud { opacity: 0; transform: translateY(-16px); }
 .hud > * { pointer-events: auto; }
 
+/* The HUD pills: a thin dark rim keeps them readable on bright sky and white snow. */
 .fuel, .coins, .distance {
-  background: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.92);
   border-radius: 16px;
   padding: 0.4rem 0.7rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(35, 38, 58, 0.16);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
 }
 .fuel { display: flex; align-items: center; gap: 0.45rem; max-width: 220px; color: var(--bad); }
 .gauge { flex: 1; height: 14px; min-width: 70px; border-radius: 8px; background: rgba(0, 0, 0, 0.1); overflow: hidden; }
@@ -261,7 +263,15 @@ body:not([data-screen="drive"]) .pedals .pedal { pointer-events: none; }
   box-shadow: inset 0 -7px 0 rgba(0, 0, 0, 0.22), 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 .pedal.brake { background: #4b5068; }
-.pedal.gas { background: var(--good); }
+.pedal.gas { background: #1a9158; } /* darker than --good so the white label reads (4:1) */
+.pedal b { display: inline-flex; align-items: center; gap: 0.25rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); }
+.pedal b .icon { width: 1.3em; height: 1.3em; }
+/* Easy to hit without looking: each pedal also answers to touches in most of its bottom corner
+   of the screen (an invisible extension of the button), not just on the drawn pedal. */
+.pedal::before { content: ""; position: absolute; bottom: -16px; width: 40vw; height: 62vh; }
+body:not(.swap) .pedal.brake::before, body.swap .pedal.gas::before { left: -16px; }
+body:not(.swap) .pedal.gas::before, body.swap .pedal.brake::before { right: -16px; }
+#pause { min-width: 48px; min-height: 48px; }
 .pedal-face {
   position: absolute;
   inset: 14px 14px 40px;
@@ -277,6 +287,7 @@ body:not([data-screen="drive"]) .pedals .pedal { pointer-events: none; }
 .result-distance { display: flex; flex-direction: column; align-items: center; }
 .result-distance strong { font-size: 3rem; font-weight: 900; line-height: 1; }
 .result-distance span { color: var(--muted); font-size: 0.95rem; }
+.result-distance span.close { color: var(--primary-dark); }
 .result-distance span.new { color: var(--good); animation: bump 0.6s 0.3s var(--spring) both; }
 .lines { display: flex; flex-direction: column; gap: 0.25rem; background: rgba(0, 0, 0, 0.04); border-radius: 16px; padding: 0.6rem 0.9rem; }
 .lines div { display: flex; justify-content: space-between; font-size: 0.92rem; color: var(--muted); }
@@ -286,6 +297,7 @@ body:not([data-screen="drive"]) .pedals .pedal { pointer-events: none; }
 .tip { font-size: 0.85rem; color: var(--muted); }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
 .row .button.big { font-size: 1.05rem; padding: 0.85rem 0.6rem; }
+#result .row { grid-template-columns: 1fr 1.5fr; } /* Drive again: the big one, under your right thumb */
 
 .toast {
   position: fixed;
@@ -422,7 +434,7 @@ body:not([data-screen="drive"]) .pedals .pedal { pointer-events: none; }
 /* ---------- driving extras ---------- */
 
 .fuel-box { display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; }
-.next-fuel { font-size: 0.75rem; background: rgba(255, 255, 255, 0.75); border-radius: 10px; padding: 0.1rem 0.5rem; color: var(--ink); }
+.next-fuel { font-size: 0.75rem; background: rgba(255, 255, 255, 0.9); border: 1.5px solid rgba(35, 38, 58, 0.14); border-radius: 10px; padding: 0.1rem 0.5rem; color: var(--ink); font-variant-numeric: tabular-nums; }
 .next-fuel:empty { display: none; }
 .stuck { position: fixed; left: 50%; top: 84px; transform: translateX(-50%); z-index: 6; font-size: 0.9rem; padding: 0.55rem 0.9rem; }
 .stuck[hidden] { display: none; }

@@ -595,6 +595,14 @@ function update(dt) {
 
   // Fuel burns faster with your foot down.
   if (driving) run.fuel = Math.max(0, run.fuel - dt * stats.burn * (gas ? 1 : 0.25));
+  // Low fuel: warn once with a sound and a buzz too, not only the red bar (not everyone can
+  // tell red from green, and many play with the sound off).
+  const tankShare = run.fuel / stats.tank;
+  if (driving && tankShare < 0.22 && tankShare > 0 && !run.lowFuelWarned) {
+    run.lowFuelWarned = true;
+    play("tick", { volume: 0.6, rate: 0.85 });
+    vibrate([30, 60, 30]);
+  } else if (tankShare > 0.5) run.lowFuelWarned = false;
 
   const pos = body.getPosition();
   run.distance = Math.max(run.distance, pos.x - 1.5);
@@ -641,7 +649,7 @@ function update(dt) {
       run.flipCoins += reward;
       popup(`${run.spin > 0 ? "Front" : "Back"} flip! +${fmt(reward)}`, "#ff6b3d");
       play("best", { volume: 0.5 });
-      vibrate(25);
+      vibrate(20 + 8 * Math.min(run.flips, 4)); // bigger combos, stronger buzz
       platform.happytime();
       bumpCoins();
     }
@@ -652,7 +660,7 @@ function update(dt) {
       popup(`Air time ${run.airTime.toFixed(1)} s +${fmt(reward)}`, "#3d9df5");
       bumpCoins();
     }
-    if (run.airTime > 0.5) vibrate(12);
+    if (run.airTime > 0.5) vibrate(Math.round(clamp(6 + run.airTime * 12, 10, 45))); // bigger jump, harder landing
     run.bestAir = Math.max(run.bestAir, run.airTime);
     run.airTime = 0;
     run.spin = 0;
@@ -690,6 +698,7 @@ function update(dt) {
     run.passedBest = true;
     popup("New best!", "#ff6b3d");
     play("fanfare", { volume: 0.5 });
+    vibrate([25, 40, 25]);
   }
   if (!run.reason) checkMissions();
 
@@ -822,6 +831,10 @@ function burst(x, y, colour, n) {
   }
 }
 
+// No screen shake for people whose phone asks for less motion, or with "Lighter effects" on.
+const reducedMotion = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+const calmMotion = () => reducedMotion.matches || save.settings.light;
+
 function vibrate(pattern) {
   if (save.settings.vibrate && navigator.vibrate) navigator.vibrate(pattern);
 }
@@ -877,7 +890,7 @@ function draw(now) {
   const stage = road.stage;
   const c = stage.colours;
   ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
-  if (shake > 0) ctx.translate((Math.random() - 0.5) * shake * 18, (Math.random() - 0.5) * shake * 18);
+  if (shake > 0 && !calmMotion()) ctx.translate((Math.random() - 0.5) * shake * 18, (Math.random() - 0.5) * shake * 18);
   const s = view.scale * camera.zoom;
   const x0 = camera.x - (w * camera.anchor) / s - 1;
   const x1 = camera.x + (w * (1 - camera.anchor)) / s + 1;
@@ -2031,8 +2044,20 @@ function showResult(earned, metres, newBest, oldBest) {
   $("result-reason").textContent = reasons[run.reason] || "Run over";
   $("result-distance").textContent = `${fmt(metres)} m`;
   const best = $("result-best");
-  best.textContent = newBest ? (oldBest > 0 ? `New best! (was ${fmt(oldBest)} m)` : `Your first drive in ${road.stage.name}!`) : `Best: ${fmt(save.stages[road.stage.id].best)} m`;
-  best.className = newBest ? "new" : "";
+  const record = save.stages[road.stage.id];
+  const gap = record.best - metres;
+  const nextMedal = road.stage.medals.findIndex((m, k) => k >= record.medals);
+  let line = `Best: ${fmt(record.best)} m`;
+  let close = false;
+  if (newBest) line = oldBest > 0 ? `New best! (was ${fmt(oldBest)} m)` : `Your first drive in ${road.stage.name}!`;
+  // Honest "so close" lines: only real numbers from this run, and only when it really was close.
+  else if (gap > 0 && gap <= Math.max(40, record.best * 0.2)) { line = `Only ${fmt(gap)} m short of your best (${fmt(record.best)} m)`; close = true; }
+  else if (nextMedal >= 0 && road.stage.medals[nextMedal] - metres <= Math.max(150, road.stage.medals[nextMedal] * 0.25)) {
+    line = `${fmt(road.stage.medals[nextMedal] - metres)} m to the ${MEDALS[nextMedal][0]} medal · Best: ${fmt(record.best)} m`;
+    close = true;
+  }
+  best.textContent = line;
+  best.className = newBest ? "new" : close ? "close" : "";
   const lines = [["Coins picked up", run.coins]];
   if (run.flipCoins) lines.push([`Flips (${run.flips})`, run.flipCoins]);
   if (run.airCoins) lines.push([`Air time (best ${run.bestAir.toFixed(1)} s)`, run.airCoins]);
@@ -2067,8 +2092,8 @@ function showResult(earned, metres, newBest, oldBest) {
     ? `You can upgrade: ${canUpgrade.map((u) => u.name.toLowerCase()).join(", ")}.`
     : nextStage && save.coins >= nextStage.cost ? `You can unlock ${nextStage.name} in Adventures!`
     : tips[run.reason] || "";
-  $("result-garage").classList.toggle("primary", canUpgrade.length > 0);
-  $("again").classList.toggle("primary", canUpgrade.length === 0);
+  // "Drive again" is always the big button; the Garage gets a dot when an upgrade is ready.
+  $("result-garage-dot").hidden = canUpgrade.length === 0;
   show("result");
 }
 
